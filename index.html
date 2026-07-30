@@ -178,6 +178,44 @@
       gap: 12px;
     }
 
+    .auth-menu {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 16px 0 18px;
+    }
+
+    .auth-tab {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.85);
+      color: var(--text);
+      padding: 11px 14px;
+      border-radius: 999px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .auth-tab.active {
+      background: linear-gradient(135deg, rgba(103, 232, 249, 0.2), rgba(167, 139, 250, 0.2));
+      border-color: rgba(103, 232, 249, 0.4);
+    }
+
+    .auth-panel {
+      display: none;
+      gap: 12px;
+    }
+
+    .auth-panel.active {
+      display: grid;
+    }
+
+    .section-note {
+      margin-bottom: 10px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
     .field-row {
       display: grid;
       gap: 12px;
@@ -250,6 +288,13 @@
     .token-hint {
       font-size: 0.9rem;
       color: var(--muted);
+    }
+
+    .mini-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.7;
     }
 
     a {
@@ -329,7 +374,14 @@ npm run claude:start</pre>
         <p>
           Prototype interactif de connexion avec validation par code. Dans cette version locale, le token est généré dans la page et affiché comme s'il avait été envoyé par e-mail ou SMS.
         </p>
-        <form class="auth-form" id="auth-form">
+        <div class="auth-menu" role="tablist" aria-label="Menu d'authentification">
+          <button class="auth-tab active" type="button" data-auth-tab="login">Se connecter</button>
+          <button class="auth-tab" type="button" data-auth-tab="register">S'inscrire</button>
+          <button class="auth-tab" type="button" data-auth-tab="forgot">Mot de passe oublié</button>
+          <button class="auth-tab" type="button" data-auth-tab="verify">Vérifier le token</button>
+        </div>
+
+        <form class="auth-form auth-panel active" id="auth-login" data-auth-panel="login">
           <div class="field-row">
             <div class="field">
               <label for="delivery">Canal de livraison</label>
@@ -367,6 +419,102 @@ npm run claude:start</pre>
           <div class="token-hint" id="token-hint">Aucun token généré pour le moment.</div>
           <div class="status-box" id="auth-status">En attente d'une demande de connexion.</div>
         </form>
+
+        <form class="auth-form auth-panel" id="auth-register" data-auth-panel="register">
+          <p class="section-note">
+            Création de compte avec choix du canal de confirmation, mot de passe, consentement et vérification par token.
+          </p>
+          <div class="field-row">
+            <div class="field">
+              <label for="register-fullname">Nom complet</label>
+              <input id="register-fullname" type="text" placeholder="Prénom et nom" required>
+            </div>
+            <div class="field">
+              <label for="register-contact">E-mail ou téléphone</label>
+              <input id="register-contact" type="text" placeholder="ex: compte@exemple.com ou +33 6 12 34 56 78" required>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="register-channel">Canal de confirmation</label>
+              <select id="register-channel">
+                <option value="email">E-mail</option>
+                <option value="phone">Téléphone</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="register-password">Mot de passe</label>
+              <input id="register-password" type="password" placeholder="Créer un mot de passe" required>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="register-password-confirm">Confirmation du mot de passe</label>
+              <input id="register-password-confirm" type="password" placeholder="Ressaisir le mot de passe" required>
+            </div>
+            <div class="field">
+              <label for="register-token">Code de vérification</label>
+              <input id="register-token" type="text" inputmode="numeric" maxlength="6" placeholder="Code reçu">
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" id="send-register-token">Envoyer le code d'inscription</button>
+            <button type="button" id="confirm-register">Confirmer l'inscription</button>
+          </div>
+
+          <div class="status-box" id="register-status">Préparez les informations pour l'inscription.</div>
+          <ul class="mini-list">
+            <li>Validation du mot de passe et de sa confirmation</li>
+            <li>Choix du canal de réception du code</li>
+            <li>Confirmation finale par token</li>
+          </ul>
+        </form>
+
+        <section class="auth-panel" data-auth-panel="forgot">
+          <p class="section-note">
+            Réinitialisation du mot de passe via e-mail ou téléphone. Ici, le code est simulé localement pour montrer le parcours complet.
+          </p>
+          <div class="field-row">
+            <div class="field">
+              <label for="forgot-contact">E-mail ou téléphone</label>
+              <input id="forgot-contact" type="text" placeholder="identifiant de récupération">
+            </div>
+            <div class="field">
+              <label for="forgot-channel">Canal de récupération</label>
+              <select id="forgot-channel">
+                <option value="email">E-mail</option>
+                <option value="phone">Téléphone</option>
+              </select>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" id="forgot-token">Envoyer le code de récupération</button>
+          </div>
+          <div class="status-box" id="forgot-status">Entrez votre identifiant de récupération pour recevoir un code.</div>
+        </section>
+
+        <section class="auth-panel" data-auth-panel="verify">
+          <p class="section-note">
+            Vérification d'un token reçu pendant la connexion, l'inscription ou la réinitialisation.
+          </p>
+          <div class="field-row">
+            <div class="field">
+              <label for="verify-target">Identifiant concerné</label>
+              <input id="verify-target" type="text" placeholder="e-mail ou téléphone">
+            </div>
+            <div class="field">
+              <label for="verify-token">Token reçu</label>
+              <input id="verify-token" type="text" inputmode="numeric" maxlength="6" placeholder="6 chiffres">
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" id="verify-code">Vérifier</button>
+          </div>
+          <div class="status-box" id="verify-status">Utilisez ce menu pour valider un code reçu par message ou par mail.</div>
+        </section>
       </section>
 
       <section class="card">
@@ -395,7 +543,9 @@ npm run claude:start</pre>
   </div>
 
   <script>
-    const authForm = document.getElementById('auth-form');
+    const authTabs = document.querySelectorAll('[data-auth-tab]');
+    const authPanels = document.querySelectorAll('[data-auth-panel]');
+    const authForm = document.getElementById('auth-login');
     const deliveryInput = document.getElementById('delivery');
     const identifierInput = document.getElementById('identifier');
     const tokenInput = document.getElementById('token');
@@ -403,6 +553,44 @@ npm run claude:start</pre>
     const authStatus = document.getElementById('auth-status');
     const confirmButton = document.getElementById('confirm-token');
     const resetButton = document.getElementById('reset-auth');
+    const registerStatus = document.getElementById('register-status');
+    const registerTokenInput = document.getElementById('register-token');
+    const registerFullnameInput = document.getElementById('register-fullname');
+    const registerContactInput = document.getElementById('register-contact');
+    const registerChannelInput = document.getElementById('register-channel');
+    const registerPasswordInput = document.getElementById('register-password');
+    const registerPasswordConfirmInput = document.getElementById('register-password-confirm');
+    const sendRegisterTokenButton = document.getElementById('send-register-token');
+    const confirmRegisterButton = document.getElementById('confirm-register');
+    const forgotContactInput = document.getElementById('forgot-contact');
+    const forgotChannelInput = document.getElementById('forgot-channel');
+    const forgotStatus = document.getElementById('forgot-status');
+    const forgotTokenButton = document.getElementById('forgot-token');
+    const verifyTargetInput = document.getElementById('verify-target');
+    const verifyTokenInput = document.getElementById('verify-token');
+    const verifyStatus = document.getElementById('verify-status');
+    const verifyCodeButton = document.getElementById('verify-code');
+
+    const authRegistry = {
+      login: { token: '', expiresAt: 0, channel: 'email', identifier: '' },
+      register: { token: '', expiresAt: 0 },
+      forgot: { token: '', expiresAt: 0 },
+      verify: { token: '', expiresAt: 0 }
+    };
+
+    function switchAuthTab(tabName) {
+      authTabs.forEach((tab) => {
+        tab.classList.toggle('active', tab.dataset.authTab === tabName);
+      });
+
+      authPanels.forEach((panel) => {
+        panel.classList.toggle('active', panel.dataset.authPanel === tabName);
+      });
+    }
+
+    authTabs.forEach((tab) => {
+      tab.addEventListener('click', () => switchAuthTab(tab.dataset.authTab));
+    });
 
     const authState = {
       token: '',
@@ -483,6 +671,82 @@ npm run claude:start</pre>
     });
 
     resetButton.addEventListener('click', resetAuth);
+
+    sendRegisterTokenButton.addEventListener('click', () => {
+      const fullname = registerFullnameInput.value.trim();
+      const contact = registerContactInput.value.trim();
+      const password = registerPasswordInput.value;
+      const passwordConfirm = registerPasswordConfirmInput.value;
+
+      if (!fullname || !contact || !password || !passwordConfirm) {
+        registerStatus.textContent = 'Veuillez remplir tous les champs de l\'inscription.';
+        return;
+      }
+
+      if (password.length < 8) {
+        registerStatus.textContent = 'Le mot de passe doit contenir au moins 8 caractères.';
+        return;
+      }
+
+      if (password !== passwordConfirm) {
+        registerStatus.textContent = 'Les mots de passe ne correspondent pas.';
+        return;
+      }
+
+      authRegistry.register.token = generateToken();
+      authRegistry.register.expiresAt = Date.now() + 10 * 60 * 1000;
+      registerStatus.textContent = `Code d'inscription généré pour ${fullname} via ${registerChannelInput.value === 'email' ? 'e-mail' : 'SMS'} vers ${contact}. Token local: ${authRegistry.register.token}`;
+      registerTokenInput.value = '';
+      registerTokenInput.focus();
+    });
+
+    confirmRegisterButton.addEventListener('click', () => {
+      if (!authRegistry.register.token) {
+        registerStatus.textContent = 'Commencez par envoyer le code d\'inscription.';
+        return;
+      }
+
+      if (Date.now() > authRegistry.register.expiresAt) {
+        registerStatus.textContent = 'Le code d\'inscription a expiré. Redemandez un nouveau code.';
+        authRegistry.register.token = '';
+        return;
+      }
+
+      if (registerTokenInput.value.trim() !== authRegistry.register.token) {
+        registerStatus.textContent = 'Code d\'inscription invalide.';
+        return;
+      }
+
+      registerStatus.textContent = `Inscription validée pour ${registerFullnameInput.value.trim()} (${registerContactInput.value.trim()}).`;
+      authRegistry.register.token = '';
+    });
+
+    forgotTokenButton.addEventListener('click', () => {
+      const contact = forgotContactInput.value.trim();
+
+      if (!contact) {
+        forgotStatus.textContent = 'Indiquez un identifiant pour récupérer le mot de passe.';
+        return;
+      }
+
+      authRegistry.forgot.token = generateToken();
+      authRegistry.forgot.expiresAt = Date.now() + 8 * 60 * 1000;
+      forgotStatus.textContent = `Code de récupération généré pour ${contact} via ${forgotChannelInput.value === 'email' ? 'e-mail' : 'SMS'}: ${authRegistry.forgot.token}`;
+    });
+
+    verifyCodeButton.addEventListener('click', () => {
+      const target = verifyTargetInput.value.trim();
+      const token = verifyTokenInput.value.trim();
+
+      if (!target || !token) {
+        verifyStatus.textContent = 'Indiquez l\'identifiant et le token à vérifier.';
+        return;
+      }
+
+      verifyStatus.textContent = `Token ${token} associé à ${target} vérifié localement. Ce menu sert de point d\'entrée commun pour les confirmations.`;
+    });
+
+    switchAuthTab('login');
   </script>
 </body>
 </html>
