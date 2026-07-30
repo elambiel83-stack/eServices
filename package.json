@@ -5,7 +5,11 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "claude:status": "claude auth status",
+    "claude:auth:device": "claude auth login --claudeai",
+    "claude:auth:sso": "claude auth login --sso",
+    "claude:start": "claude"
   },
   "devDependencies": {
     "@types/node": "^22.15.30",

@@ -113,10 +113,30 @@ claude auth status
 claude auth login
 ```
 
+### Connexion avec les comptes deja presents sur le peripherique
+
+Cette option utilise le navigateur du peripherique. Si vous etes deja connecte a Claude dans ce navigateur, la connexion est generalement immediate.
+
+```bash
+npm run claude:auth:device
+```
+
+Pour un environnement entreprise (SSO) :
+
+```bash
+npm run claude:auth:sso
+```
+
+Verification rapide :
+
+```bash
+npm run claude:status
+```
+
 4. Ouvrir Claude dans le dossier du projet :
 
 ```bash
-claude
+npm run claude:start
 ```
 
 Note : en environnement conteneurise, la redirection navigateur peut echouer sur localhost.
