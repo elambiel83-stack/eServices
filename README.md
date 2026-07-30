@@ -91,6 +91,37 @@ Installer les dependances :
 npm install
 ```
 
+## Connexion Claude
+
+Pour utiliser Claude AI dans ce projet :
+
+1. Verifier l'installation de la CLI :
+
+```bash
+claude --version
+```
+
+2. Verifier l'etat de connexion :
+
+```bash
+claude auth status
+```
+
+3. Si non connecte, lancer la connexion :
+
+```bash
+claude auth login
+```
+
+4. Ouvrir Claude dans le dossier du projet :
+
+```bash
+claude
+```
+
+Note : en environnement conteneurise, la redirection navigateur peut echouer sur localhost.
+Dans ce cas, copier le code OAuth affiche dans le navigateur et le coller dans le prompt terminal.
+
 ## Tests et verification
 
 Executer les tests :
