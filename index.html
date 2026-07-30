@@ -321,7 +321,7 @@
 <body>
   <div class="shell">
     <header>
-      <div class="eyebrow">eServices · Aperçu navigateur</div>
+      <div class="eyebrow">eServices · Demande de passeport</div>
       <h1>Votre passeport à porté de main</h1>
       <p class="subtitle">
         Cette page remplace le listing de répertoire dans le navigateur et donne un aperçu lisible du projet:
@@ -372,8 +372,18 @@ npm run claude:start</pre>
       <section class="card">
         <h2>Authentification locale par email ou téléphone</h2>
         <p>
-          Prototype interactif de connexion avec validation par code. La page appelle maintenant un backend local qui génère, confirme et vérifie les tokens pour les parcours e-mail et téléphone.
+          Prototype interactif de connexion avec validation par code. La page appelle maintenant un backend local qui génère, confirme et vérifie les tokens pour les parcours e-mail, téléphone, Gmail et iCloud.
         </p>
+        <div class="chips" style="margin-bottom: 10px;">
+          <span class="chip">Compte Gmail</span>
+          <span class="chip">Compte iCloud</span>
+          <span class="chip">E-mail classique</span>
+          <span class="chip">SMS</span>
+        </div>
+        <div class="actions" style="margin-bottom: 14px;">
+          <button type="button" class="secondary" id="quick-gmail">Proposer Gmail</button>
+          <button type="button" class="secondary" id="quick-icloud">Proposer iCloud</button>
+        </div>
         <div class="auth-menu" role="tablist" aria-label="Menu d'authentification">
           <button class="auth-tab active" type="button" data-auth-tab="login">Se connecter</button>
           <button class="auth-tab" type="button" data-auth-tab="register">S'inscrire</button>
@@ -393,6 +403,21 @@ npm run claude:start</pre>
             <div class="field">
               <label for="identifier">Adresse e-mail ou numéro</label>
               <input id="identifier" name="identifier" type="text" placeholder="ex: utilisateur@exemple.com ou +33 6 12 34 56 78" required>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="login-provider">Fournisseur du compte</label>
+              <select id="login-provider" name="login-provider">
+                <option value="generic">Compte e-mail standard</option>
+                <option value="gmail">Gmail</option>
+                <option value="icloud">iCloud</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="login-note">Suggestion</label>
+              <input id="login-note" type="text" value="Choisissez Gmail ou iCloud si votre adresse dépend d'un de ces services." readonly>
             </div>
           </div>
 
@@ -546,8 +571,11 @@ npm run claude:start</pre>
     const authTabs = document.querySelectorAll('[data-auth-tab]');
     const authPanels = document.querySelectorAll('[data-auth-panel]');
     const authForm = document.getElementById('auth-login');
+    const quickGmailButton = document.getElementById('quick-gmail');
+    const quickIcloudButton = document.getElementById('quick-icloud');
     const deliveryInput = document.getElementById('delivery');
     const identifierInput = document.getElementById('identifier');
+    const loginProviderInput = document.getElementById('login-provider');
     const tokenInput = document.getElementById('token');
     const tokenHint = document.getElementById('token-hint');
     const authStatus = document.getElementById('auth-status');
@@ -639,6 +667,31 @@ npm run claude:start</pre>
       authStatus.textContent = message;
     }
 
+    function inferProvider(identifier) {
+      const value = identifier.trim().toLowerCase();
+      if (value.endsWith('@gmail.com')) {
+        return 'gmail';
+      }
+
+      if (value.endsWith('@icloud.com') || value.endsWith('@me.com') || value.endsWith('@mac.com')) {
+        return 'icloud';
+      }
+
+      return 'generic';
+    }
+
+    function suggestProvider(provider) {
+      switchAuthTab('login');
+      if (loginProviderInput) {
+        loginProviderInput.value = provider;
+      }
+
+      deliveryInput.value = 'email';
+      identifierInput.value = provider === 'gmail' ? 'utilisateur@gmail.com' : 'utilisateur@icloud.com';
+      setStatus(`Proposition de connexion via ${provider === 'gmail' ? 'Gmail' : 'iCloud'} prête. Vous pouvez confirmer ou modifier l'adresse proposée.`);
+      tokenHint.textContent = 'Le backend local générera un token de confirmation pour ce fournisseur.';
+    }
+
     function resetAuth() {
       authState.token = '';
       authState.expiresAt = 0;
@@ -646,14 +699,21 @@ npm run claude:start</pre>
       authState.identifier = '';
       authForm.reset();
       deliveryInput.value = 'email';
+      if (loginProviderInput) {
+        loginProviderInput.value = 'generic';
+      }
       tokenInput.value = '';
       tokenHint.textContent = 'Aucun token généré pour le moment.';
       setStatus('En attente d\'une demande de connexion.');
     }
 
+    quickGmailButton?.addEventListener('click', () => suggestProvider('gmail'));
+    quickIcloudButton?.addEventListener('click', () => suggestProvider('icloud'));
+
     authForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const identifier = identifierInput.value.trim();
+      const provider = loginProviderInput ? loginProviderInput.value : inferProvider(identifier);
       if (!identifier) {
         setStatus('Veuillez renseigner une adresse e-mail ou un numéro de téléphone.');
         return;
@@ -663,7 +723,8 @@ npm run claude:start</pre>
         const result = await postJson('/api/auth/request-token', {
           flow: 'login',
           channel: deliveryInput.value,
-          identifier
+          identifier,
+          provider
         });
 
         authRegistry.login = result;
@@ -732,7 +793,8 @@ npm run claude:start</pre>
           channel: registerChannelInput.value,
           identifier: contact,
           fullname,
-          password
+          password,
+          provider: inferProvider(contact)
         });
 
         authRegistry.register = result;
