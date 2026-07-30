@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>eServices - Aperçu projet</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: rgba(15, 23, 42, 0.82);
+      --panel-strong: #111827;
+      --text: #e5eefc;
+      --muted: #94a3b8;
+      --accent: #67e8f9;
+      --accent-2: #a78bfa;
+      --border: rgba(148, 163, 184, 0.18);
+      --shadow: 0 24px 80px rgba(2, 6, 23, 0.45);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(103, 232, 249, 0.18), transparent 32%),
+        radial-gradient(circle at 80% 12%, rgba(167, 139, 250, 0.16), transparent 28%),
+        linear-gradient(180deg, #050816, #0b1020 42%, #0f172a 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px;
+    }
+
+    .shell {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      overflow: hidden;
+    }
+
+    header {
+      padding: 34px 36px 20px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(103, 232, 249, 0.07), rgba(167, 139, 250, 0.06));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.92rem;
+      letter-spacing: 0.02em;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 24px rgba(103, 232, 249, 0.55);
+    }
+
+    h1 {
+      margin: 18px 0 10px;
+      font-size: clamp(2.2rem, 4vw, 4.4rem);
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+
+    .subtitle {
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 1.04rem;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    main {
+      padding: 28px 36px 36px;
+      display: grid;
+      gap: 22px;
+      grid-template-columns: 1.4fr 0.9fr;
+    }
+
+    .card {
+      background: var(--panel-strong);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 22px;
+    }
+
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 1.2rem;
+    }
+
+    .card p {
+      margin-top: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stat {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+    }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .stat .value {
+      font-size: 1.05rem;
+      font-weight: 650;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .list li + li { margin-top: 8px; }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(103, 232, 249, 0.08);
+      border: 1px solid rgba(103, 232, 249, 0.18);
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      border-radius: 18px;
+      overflow: auto;
+      background: #020617;
+      border: 1px solid var(--border);
+      color: #dbeafe;
+      line-height: 1.55;
+      font-size: 0.94rem;
+    }
+
+    .auth-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .field-row {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(2, 6, 23, 0.7);
+      color: var(--text);
+      outline: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: rgba(103, 232, 249, 0.55);
+      box-shadow: 0 0 0 3px rgba(103, 232, 249, 0.12);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      padding: 12px 16px;
+      border-radius: 14px;
+      color: #02111f;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      font-weight: 700;
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border);
+    }
+
+    .status-box {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(2, 6, 23, 0.55);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 54px;
+      white-space: pre-wrap;
+    }
+
+    .token-hint {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    footer {
+      padding: 0 36px 32px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 880px) {
+      body { padding: 18px; }
+      main { grid-template-columns: 1fr; padding: 20px; }
+      header, footer { padding-left: 20px; padding-right: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="eyebrow">eServices · Aperçu navigateur</div>
+      <h1>Machine d’état dossier passeport / e-NIF</h1>
+      <p class="subtitle">
+        Cette page remplace le listing de répertoire dans le navigateur et donne un aperçu lisible du projet:
+        structure, règles métier, commandes utiles et fichiers principaux.
+      </p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>Résumé métier</h2>
+        <div class="grid">
+          <div class="stat">
+            <span class="label">Statuts</span>
+            <div class="value">BROUILLON, EN_COURS, ERREUR, CLOTURE</div>
+          </div>
+          <div class="stat">
+            <span class="label">Rôles</span>
+            <div class="value">AGENT, SYSTEME</div>
+          </div>
+          <div class="stat">
+            <span class="label">Règle clé</span>
+            <div class="value">ERREUR → EN_COURS exige une justification</div>
+          </div>
+          <div class="stat">
+            <span class="label">Blocage</span>
+            <div class="value">CLOTURE ne repart pas vers un autre statut</div>
+          </div>
+        </div>
+
+        <div class="chips">
+          <span class="chip">TypeScript</span>
+          <span class="chip">Vitest</span>
+          <span class="chip">README enrichi</span>
+          <span class="chip">Connexion Claude</span>
+        </div>
+      </section>
+
+      <aside class="card">
+        <h2>Commandes utiles</h2>
+        <pre>npm install
+npm test
+npm run typecheck
+npm run claude:status
+npm run claude:auth:device
+npm run claude:start</pre>
+      </aside>
+
+      <section class="card">
+        <h2>Authentification locale par email ou téléphone</h2>
+        <p>
+          Prototype interactif de connexion avec validation par code. Dans cette version locale, le token est généré dans la page et affiché comme s'il avait été envoyé par e-mail ou SMS.
+        </p>
+        <form class="auth-form" id="auth-form">
+          <div class="field-row">
+            <div class="field">
+              <label for="delivery">Canal de livraison</label>
+              <select id="delivery" name="delivery">
+                <option value="email">E-mail</option>
+                <option value="phone">Téléphone</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="identifier">Adresse e-mail ou numéro</label>
+              <input id="identifier" name="identifier" type="text" placeholder="ex: utilisateur@exemple.com ou +33 6 12 34 56 78" required>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" id="send-token">Envoyer le token</button>
+            <button type="button" class="secondary" id="reset-auth">Réinitialiser</button>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="token">Code de confirmation</label>
+              <input id="token" name="token" type="text" inputmode="numeric" maxlength="6" placeholder="6 chiffres">
+            </div>
+            <div class="field">
+              <label for="token-ttl">Expiration</label>
+              <input id="token-ttl" type="text" value="5 minutes" readonly>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" id="confirm-token">Confirmer le code</button>
+          </div>
+
+          <div class="token-hint" id="token-hint">Aucun token généré pour le moment.</div>
+          <div class="status-box" id="auth-status">En attente d'une demande de connexion.</div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Fichiers principaux</h2>
+        <ul class="list">
+          <li><a href="README.md">README.md</a> — documentation complète du projet</li>
+          <li><a href="src/services/dossier/dossier-state-machine.ts">src/services/dossier/dossier-state-machine.ts</a> — logique métier</li>
+          <li><a href="src/services/dossier/dossier-state-machine.example.ts">src/services/dossier/dossier-state-machine.example.ts</a> — exemple d’usage</li>
+          <li><a href="tests/dossier-state-machine.test.ts">tests/dossier-state-machine.test.ts</a> — tests unitaires</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Comment voir cette page</h2>
+        <ul class="list">
+          <li>Ouvre <a href="http://localhost:4173">http://localhost:4173</a> dans le navigateur.</li>
+          <li>Le serveur Python simple sert maintenant <strong>index.html</strong> à la racine.</li>
+          <li>Les changements apparaissent après actualisation de la page.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      Aperçu local rendu depuis la racine du dépôt. Les fichiers restent disponibles en navigation directe si besoin.
+    </footer>
+  </div>
+
+  <script>
+    const authForm = document.getElementById('auth-form');
+    const deliveryInput = document.getElementById('delivery');
+    const identifierInput = document.getElementById('identifier');
+    const tokenInput = document.getElementById('token');
+    const tokenHint = document.getElementById('token-hint');
+    const authStatus = document.getElementById('auth-status');
+    const confirmButton = document.getElementById('confirm-token');
+    const resetButton = document.getElementById('reset-auth');
+
+    const authState = {
+      token: '',
+      expiresAt: 0,
+      channel: 'email',
+      identifier: ''
+    };
+
+    function formatExpiry(date) {
+      return new Intl.DateTimeFormat('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).format(date);
+    }
+
+    function setStatus(message) {
+      authStatus.textContent = message;
+    }
+
+    function resetAuth() {
+      authState.token = '';
+      authState.expiresAt = 0;
+      authState.channel = 'email';
+      authState.identifier = '';
+      authForm.reset();
+      deliveryInput.value = 'email';
+      tokenInput.value = '';
+      tokenHint.textContent = 'Aucun token généré pour le moment.';
+      setStatus('En attente d\'une demande de connexion.');
+    }
+
+    function generateToken() {
+      return String(Math.floor(100000 + Math.random() * 900000));
+    }
+
+    authForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const identifier = identifierInput.value.trim();
+      if (!identifier) {
+        setStatus('Veuillez renseigner une adresse e-mail ou un numéro de téléphone.');
+        return;
+      }
+
+      authState.channel = deliveryInput.value;
+      authState.identifier = identifier;
+      authState.token = generateToken();
+      authState.expiresAt = Date.now() + 5 * 60 * 1000;
+
+      tokenHint.textContent = `Token prêt à être envoyé par ${authState.channel === 'email' ? 'e-mail' : 'SMS'} à ${authState.identifier}. Code local: ${authState.token} (expire à ${formatExpiry(new Date(authState.expiresAt))}).`;
+      setStatus(`Un token de confirmation a été généré pour ${authState.identifier}. Saisissez le code affiché dans le champ prévu.`);
+      tokenInput.value = '';
+      tokenInput.focus();
+    });
+
+    confirmButton.addEventListener('click', () => {
+      const enteredToken = tokenInput.value.trim();
+      if (!authState.token) {
+        setStatus('Demandez d\'abord un token de connexion.');
+        return;
+      }
+
+      if (Date.now() > authState.expiresAt) {
+        setStatus('Le token a expiré. Générez-en un nouveau.');
+        authState.token = '';
+        tokenHint.textContent = 'Token expiré. Aucune confirmation possible.';
+        return;
+      }
+
+      if (enteredToken !== authState.token) {
+        setStatus('Code invalide. Vérifiez le token reçu par e-mail ou SMS.');
+        return;
+      }
+
+      setStatus(`Connexion réussie pour ${authState.identifier} via ${authState.channel === 'email' ? 'e-mail' : 'SMS'}.`);
+      tokenHint.textContent = 'Connexion confirmée localement dans l\'aperçu.';
+      authState.token = '';
+    });
+
+    resetButton.addEventListener('click', resetAuth);
+  </script>
+</body>
+</html>
