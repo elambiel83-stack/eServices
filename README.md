@@ -91,6 +91,30 @@ Installer les dependances :
 npm install
 ```
 
+## Backend local
+
+Le projet expose maintenant un backend Node local qui sert aussi l'interface statique et les routes d'authentification.
+
+Démarrer l'application complète :
+
+```bash
+npm run dev
+```
+
+Le serveur écoute par défaut sur `http://localhost:4173`.
+
+Routes disponibles :
+
+- `GET /api/health`
+- `GET /api/auth/state`
+- `POST /api/auth/request-token`
+- `POST /api/auth/confirm-token`
+- `POST /api/auth/verify-token`
+- `POST /api/auth/reset`
+- `GET /api/users`
+
+Le backend simule l'envoi des tokens par e-mail ou SMS pour rendre le parcours fonctionnel localement. L'intégration réelle avec un fournisseur de messagerie ou SMS pourra être branchée ensuite.
+
 ## Connexion Claude
 
 Pour utiliser Claude AI dans ce projet :

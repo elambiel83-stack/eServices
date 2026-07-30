@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>eServices - Aperçu projet</title>
+  <title>eServices - PASSEPORT RDC</title>
   <style>
     :root {
       color-scheme: dark;
@@ -322,10 +322,10 @@
   <div class="shell">
     <header>
       <div class="eyebrow">eServices · Aperçu navigateur</div>
-      <h1>Machine d’état dossier passeport / e-NIF</h1>
+      <h1>Votre passeport à porté de main</h1>
       <p class="subtitle">
         Cette page remplace le listing de répertoire dans le navigateur et donne un aperçu lisible du projet:
-        structure, règles métier, commandes utiles et fichiers principaux.
+        structure, règles métier, commandes utiles, fichiers principaux et backend local d'authentification.
       </p>
     </header>
 
@@ -372,7 +372,7 @@ npm run claude:start</pre>
       <section class="card">
         <h2>Authentification locale par email ou téléphone</h2>
         <p>
-          Prototype interactif de connexion avec validation par code. Dans cette version locale, le token est généré dans la page et affiché comme s'il avait été envoyé par e-mail ou SMS.
+          Prototype interactif de connexion avec validation par code. La page appelle maintenant un backend local qui génère, confirme et vérifie les tokens pour les parcours e-mail et téléphone.
         </p>
         <div class="auth-menu" role="tablist" aria-label="Menu d'authentification">
           <button class="auth-tab active" type="button" data-auth-tab="login">Se connecter</button>
@@ -531,7 +531,7 @@ npm run claude:start</pre>
         <h2>Comment voir cette page</h2>
         <ul class="list">
           <li>Ouvre <a href="http://localhost:4173">http://localhost:4173</a> dans le navigateur.</li>
-          <li>Le serveur Python simple sert maintenant <strong>index.html</strong> à la racine.</li>
+          <li>Le backend Node sert maintenant <strong>index.html</strong> et les routes <strong>/api</strong>.</li>
           <li>Les changements apparaissent après actualisation de la page.</li>
         </ul>
       </section>
@@ -572,10 +572,9 @@ npm run claude:start</pre>
     const verifyCodeButton = document.getElementById('verify-code');
 
     const authRegistry = {
-      login: { token: '', expiresAt: 0, channel: 'email', identifier: '' },
-      register: { token: '', expiresAt: 0 },
-      forgot: { token: '', expiresAt: 0 },
-      verify: { token: '', expiresAt: 0 }
+      login: null,
+      register: null,
+      forgot: null
     };
 
     function switchAuthTab(tabName) {
@@ -607,6 +606,35 @@ npm run claude:start</pre>
       }).format(date);
     }
 
+    async function postJson(path, payload) {
+      const response = await fetch(path, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'API_ERROR');
+      }
+
+      return data;
+    }
+
+    function setBusy(button, busy, label) {
+      if (!button) {
+        return;
+      }
+
+      button.disabled = busy;
+      if (label) {
+        button.dataset.originalLabel = button.dataset.originalLabel || button.textContent;
+        button.textContent = busy ? label : button.dataset.originalLabel;
+      }
+    }
+
     function setStatus(message) {
       authStatus.textContent = message;
     }
@@ -623,11 +651,7 @@ npm run claude:start</pre>
       setStatus('En attente d\'une demande de connexion.');
     }
 
-    function generateToken() {
-      return String(Math.floor(100000 + Math.random() * 900000));
-    }
-
-    authForm.addEventListener('submit', (event) => {
+    authForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const identifier = identifierInput.value.trim();
       if (!identifier) {
@@ -635,44 +659,53 @@ npm run claude:start</pre>
         return;
       }
 
-      authState.channel = deliveryInput.value;
-      authState.identifier = identifier;
-      authState.token = generateToken();
-      authState.expiresAt = Date.now() + 5 * 60 * 1000;
+      try {
+        const result = await postJson('/api/auth/request-token', {
+          flow: 'login',
+          channel: deliveryInput.value,
+          identifier
+        });
 
-      tokenHint.textContent = `Token prêt à être envoyé par ${authState.channel === 'email' ? 'e-mail' : 'SMS'} à ${authState.identifier}. Code local: ${authState.token} (expire à ${formatExpiry(new Date(authState.expiresAt))}).`;
-      setStatus(`Un token de confirmation a été généré pour ${authState.identifier}. Saisissez le code affiché dans le champ prévu.`);
-      tokenInput.value = '';
-      tokenInput.focus();
+        authRegistry.login = result;
+        authState.channel = result.channel;
+        authState.identifier = result.identifier;
+        authState.token = result.token;
+        authState.expiresAt = result.expiresAt;
+
+        tokenHint.textContent = `${result.deliveryMessage} Expire à ${formatExpiry(new Date(result.expiresAt))}.`;
+        setStatus(`Token de connexion généré pour ${result.identifier}. Saisissez le code pour confirmer.`);
+        tokenInput.value = '';
+        tokenInput.focus();
+      } catch (error) {
+        setStatus(`Erreur backend: ${error.message}`);
+      }
     });
 
-    confirmButton.addEventListener('click', () => {
+    confirmButton.addEventListener('click', async () => {
       const enteredToken = tokenInput.value.trim();
-      if (!authState.token) {
+      if (!authRegistry.login?.requestId) {
         setStatus('Demandez d\'abord un token de connexion.');
         return;
       }
 
-      if (Date.now() > authState.expiresAt) {
-        setStatus('Le token a expiré. Générez-en un nouveau.');
+      try {
+        const result = await postJson('/api/auth/confirm-token', {
+          requestId: authRegistry.login.requestId,
+          token: enteredToken
+        });
+
+        setStatus(`Connexion réussie pour ${result.identifier} via ${result.channel === 'email' ? 'e-mail' : 'SMS'}.`);
+        tokenHint.textContent = 'Connexion confirmée par le backend local.';
         authState.token = '';
-        tokenHint.textContent = 'Token expiré. Aucune confirmation possible.';
-        return;
+        authRegistry.login = null;
+      } catch (error) {
+        setStatus(`Confirmation refusée: ${error.message}`);
       }
-
-      if (enteredToken !== authState.token) {
-        setStatus('Code invalide. Vérifiez le token reçu par e-mail ou SMS.');
-        return;
-      }
-
-      setStatus(`Connexion réussie pour ${authState.identifier} via ${authState.channel === 'email' ? 'e-mail' : 'SMS'}.`);
-      tokenHint.textContent = 'Connexion confirmée localement dans l\'aperçu.';
-      authState.token = '';
     });
 
     resetButton.addEventListener('click', resetAuth);
 
-    sendRegisterTokenButton.addEventListener('click', () => {
+    sendRegisterTokenButton.addEventListener('click', async () => {
       const fullname = registerFullnameInput.value.trim();
       const contact = registerContactInput.value.trim();
       const password = registerPasswordInput.value;
@@ -693,35 +726,44 @@ npm run claude:start</pre>
         return;
       }
 
-      authRegistry.register.token = generateToken();
-      authRegistry.register.expiresAt = Date.now() + 10 * 60 * 1000;
-      registerStatus.textContent = `Code d'inscription généré pour ${fullname} via ${registerChannelInput.value === 'email' ? 'e-mail' : 'SMS'} vers ${contact}. Token local: ${authRegistry.register.token}`;
-      registerTokenInput.value = '';
-      registerTokenInput.focus();
+      try {
+        const result = await postJson('/api/auth/request-token', {
+          flow: 'register',
+          channel: registerChannelInput.value,
+          identifier: contact,
+          fullname,
+          password
+        });
+
+        authRegistry.register = result;
+        registerStatus.textContent = `${result.deliveryMessage} Confirmez avec le token reçu pour finaliser l'inscription.`;
+        registerTokenInput.value = '';
+        registerTokenInput.focus();
+      } catch (error) {
+        registerStatus.textContent = `Erreur backend: ${error.message}`;
+      }
     });
 
-    confirmRegisterButton.addEventListener('click', () => {
-      if (!authRegistry.register.token) {
+    confirmRegisterButton.addEventListener('click', async () => {
+      if (!authRegistry.register?.requestId) {
         registerStatus.textContent = 'Commencez par envoyer le code d\'inscription.';
         return;
       }
 
-      if (Date.now() > authRegistry.register.expiresAt) {
-        registerStatus.textContent = 'Le code d\'inscription a expiré. Redemandez un nouveau code.';
-        authRegistry.register.token = '';
-        return;
-      }
+      try {
+        const result = await postJson('/api/auth/confirm-token', {
+          requestId: authRegistry.register.requestId,
+          token: registerTokenInput.value.trim()
+        });
 
-      if (registerTokenInput.value.trim() !== authRegistry.register.token) {
-        registerStatus.textContent = 'Code d\'inscription invalide.';
-        return;
+        registerStatus.textContent = `Inscription validée pour ${result.user.fullname || result.identifier} (${result.identifier}).`;
+        authRegistry.register = null;
+      } catch (error) {
+        registerStatus.textContent = `Inscription refusée: ${error.message}`;
       }
-
-      registerStatus.textContent = `Inscription validée pour ${registerFullnameInput.value.trim()} (${registerContactInput.value.trim()}).`;
-      authRegistry.register.token = '';
     });
 
-    forgotTokenButton.addEventListener('click', () => {
+    forgotTokenButton.addEventListener('click', async () => {
       const contact = forgotContactInput.value.trim();
 
       if (!contact) {
@@ -729,12 +771,21 @@ npm run claude:start</pre>
         return;
       }
 
-      authRegistry.forgot.token = generateToken();
-      authRegistry.forgot.expiresAt = Date.now() + 8 * 60 * 1000;
-      forgotStatus.textContent = `Code de récupération généré pour ${contact} via ${forgotChannelInput.value === 'email' ? 'e-mail' : 'SMS'}: ${authRegistry.forgot.token}`;
+      try {
+        const result = await postJson('/api/auth/request-token', {
+          flow: 'forgot',
+          channel: forgotChannelInput.value,
+          identifier: contact
+        });
+
+        authRegistry.forgot = result;
+        forgotStatus.textContent = `${result.deliveryMessage} Utilisez ensuite le menu Vérifier le token ou la confirmation de réinitialisation.`;
+      } catch (error) {
+        forgotStatus.textContent = `Erreur backend: ${error.message}`;
+      }
     });
 
-    verifyCodeButton.addEventListener('click', () => {
+    verifyCodeButton.addEventListener('click', async () => {
       const target = verifyTargetInput.value.trim();
       const token = verifyTokenInput.value.trim();
 
@@ -743,7 +794,16 @@ npm run claude:start</pre>
         return;
       }
 
-      verifyStatus.textContent = `Token ${token} associé à ${target} vérifié localement. Ce menu sert de point d\'entrée commun pour les confirmations.`;
+      try {
+        const result = await postJson('/api/auth/verify-token', {
+          identifier: target,
+          token
+        });
+
+        verifyStatus.textContent = `Token ${result.token || token} confirmé pour ${result.identifier} via ${result.channel === 'email' ? 'e-mail' : 'SMS'}.`;
+      } catch (error) {
+        verifyStatus.textContent = `Vérification refusée: ${error.message}`;
+      }
     });
 
     switchAuthTab('login');
