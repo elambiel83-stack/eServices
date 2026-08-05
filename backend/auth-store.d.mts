@@ -4,6 +4,7 @@ export interface AuthTokenRequest {
   identifier: string;
   fullname?: string;
   password?: string;
+  provider?: 'generic' | 'gmail' | 'icloud';
 }
 
 export interface AuthTokenResponse {
@@ -14,6 +15,7 @@ export interface AuthTokenResponse {
   expiresAt: number;
   deliveryMessage: string;
   token: string;
+  provider: 'generic' | 'gmail' | 'icloud';
 }
 
 export interface AuthTokenConfirmationRequest {
@@ -30,6 +32,7 @@ export interface AuthUser {
   identifier: string;
   fullname: string;
   channel: 'email' | 'phone';
+  provider: 'generic' | 'gmail' | 'icloud';
   verifiedAt: string;
   status: 'active';
   passwordResetAt: string | null;
@@ -40,6 +43,7 @@ export interface AuthSession {
   identifier: string;
   normalizedIdentifier: string;
   channel: 'email' | 'phone';
+  provider: 'generic' | 'gmail' | 'icloud';
   flow: 'login' | 'register' | 'forgot';
   confirmedAt: string;
 }
@@ -61,6 +65,7 @@ export interface AuthConfirmRegistrationResponse {
   flow: 'register';
   identifier: string;
   channel: 'email' | 'phone';
+  provider: 'generic' | 'gmail' | 'icloud';
   confirmedAt: string;
   user: AuthUser;
 }
@@ -70,6 +75,7 @@ export interface AuthConfirmForgotResponse {
   flow: 'forgot';
   identifier: string;
   channel: 'email' | 'phone';
+  provider: 'generic' | 'gmail' | 'icloud';
   confirmedAt: string;
   passwordReset: true;
   userExists: boolean;
@@ -80,6 +86,7 @@ export interface AuthConfirmLoginResponse {
   flow: 'login';
   identifier: string;
   channel: 'email' | 'phone';
+  provider: 'generic' | 'gmail' | 'icloud';
   confirmedAt: string;
   session: AuthSession;
 }
@@ -90,6 +97,7 @@ export interface AuthVerifyResponse {
   ok: true;
   identifier: string;
   channel: 'email' | 'phone';
+  provider: 'generic' | 'gmail' | 'icloud';
   flow: 'login' | 'register' | 'forgot';
   expiresAt: number;
 }

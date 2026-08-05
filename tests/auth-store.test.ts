@@ -16,12 +16,14 @@ describe('auth-store', () => {
     const request = requestAuthToken({
       flow: 'login',
       channel: 'email',
-      identifier: 'utilisateur@exemple.com'
+      identifier: 'utilisateur@exemple.com',
+      provider: 'gmail'
     });
 
     expect(request.requestId).toBeTypeOf('string');
     expect(request.token).toHaveLength(6);
     expect(getAuthSnapshot().activeRequests).toHaveLength(1);
+    expect(request.provider).toBe('gmail');
   });
 
   it('valide une inscription et crée un utilisateur', () => {
@@ -30,7 +32,8 @@ describe('auth-store', () => {
       channel: 'phone',
       identifier: '+33 6 12 34 56 78',
       fullname: 'Ada Lovelace',
-      password: 'secret123'
+      password: 'secret123',
+      provider: 'icloud'
     });
 
     const result = confirmAuthToken({
@@ -40,13 +43,15 @@ describe('auth-store', () => {
 
     expect(result.ok).toBe(true);
     expect(getAuthSnapshot().users).toHaveLength(1);
+    expect(getAuthSnapshot().users[0].provider).toBe('icloud');
   });
 
   it('refuse un token invalide', () => {
     const request = requestAuthToken({
       flow: 'login',
       channel: 'email',
-      identifier: 'client@exemple.com'
+      identifier: 'client@exemple.com',
+      provider: 'gmail'
     });
 
     expect(() => confirmAuthToken({ requestId: request.requestId, token: '000000' })).toThrow('TOKEN_INVALID');
@@ -56,7 +61,8 @@ describe('auth-store', () => {
     const request = requestAuthToken({
       flow: 'forgot',
       channel: 'email',
-      identifier: 'client@exemple.com'
+      identifier: 'client@exemple.com',
+      provider: 'icloud'
     });
 
     const verification = verifyAuthToken({
@@ -65,5 +71,6 @@ describe('auth-store', () => {
     });
 
     expect(verification.ok).toBe(true);
+    expect(verification.provider).toBe('icloud');
   });
 });

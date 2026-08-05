@@ -21,18 +21,21 @@ function createToken() {
   return String(randomInt(100000, 1000000));
 }
 
-function createRequestMessage(flow, channel, identifier, token) {
+function createRequestMessage(flow, channel, identifier, token, provider) {
   const channelLabel = channel === 'email' ? 'e-mail' : 'SMS';
+  const providerLabel = provider === 'gmail' ? 'Gmail' : provider === 'icloud' ? 'iCloud' : null;
+
+  const providerPrefix = providerLabel ? `Connexion via compte ${providerLabel} : ` : '';
 
   if (flow === 'register') {
-    return `Code d'inscription envoyé par ${channelLabel} à ${identifier}. Token: ${token}.`;
+    return `${providerPrefix}Code d'inscription envoyé par ${channelLabel} à ${identifier}. Token: ${token}.`;
   }
 
   if (flow === 'forgot') {
-    return `Code de récupération envoyé par ${channelLabel} à ${identifier}. Token: ${token}.`;
+    return `${providerPrefix}Code de récupération envoyé par ${channelLabel} à ${identifier}. Token: ${token}.`;
   }
 
-  return `Code de connexion envoyé par ${channelLabel} à ${identifier}. Token: ${token}.`;
+  return `${providerPrefix}Code de connexion envoyé par ${channelLabel} à ${identifier}. Token: ${token}.`;
 }
 
 function buildPublicRequest(request) {
@@ -40,6 +43,7 @@ function buildPublicRequest(request) {
     requestId: request.requestId,
     flow: request.flow,
     channel: request.channel,
+    provider: request.provider,
     identifier: request.identifier,
     expiresAt: request.expiresAt,
     deliveryMessage: request.deliveryMessage,
@@ -76,7 +80,7 @@ function ensureRequest(requestId) {
   return request;
 }
 
-export function requestAuthToken({ flow, channel, identifier, fullname = '', password = '' }) {
+export function requestAuthToken({ flow, channel, identifier, fullname = '', password = '', provider = 'generic' }) {
   const normalizedIdentifier = normalizeIdentifier(identifier);
 
   if (!flow || !channel || !normalizedIdentifier) {
@@ -92,6 +96,7 @@ export function requestAuthToken({ flow, channel, identifier, fullname = '', pas
     identifier: normalizedIdentifier,
     displayIdentifier: identifier.trim(),
     fullname: fullname.trim(),
+    provider,
     passwordHash: password ? hashSecret(password) : '',
     token: createToken(),
     expiresAt: Date.now() + (flow === 'forgot' ? RESET_TTL_MS : TOKEN_TTL_MS),
@@ -99,7 +104,7 @@ export function requestAuthToken({ flow, channel, identifier, fullname = '', pas
     deliveryMessage: ''
   };
 
-  request.deliveryMessage = createRequestMessage(flow, channel, request.displayIdentifier, request.token);
+  request.deliveryMessage = createRequestMessage(flow, channel, request.displayIdentifier, request.token, provider);
   authState.requests.set(request.requestId, request);
 
   return buildPublicRequest(request);
@@ -132,6 +137,7 @@ export function confirmAuthToken({ requestId, token }) {
       normalizedIdentifier,
       fullname: request.fullname || existingUser?.fullname || '',
       channel: request.channel,
+      provider: request.provider,
       passwordHash: request.passwordHash || existingUser?.passwordHash || '',
       verifiedAt: confirmedAt,
       status: 'active'
@@ -143,6 +149,7 @@ export function confirmAuthToken({ requestId, token }) {
       flow: request.flow,
       identifier: request.displayIdentifier,
       channel: request.channel,
+      provider: request.provider,
       confirmedAt,
       user
     };
@@ -160,6 +167,7 @@ export function confirmAuthToken({ requestId, token }) {
       flow: request.flow,
       identifier: request.displayIdentifier,
       channel: request.channel,
+      provider: request.provider,
       confirmedAt,
       passwordReset: true,
       userExists: Boolean(existingUser)
@@ -171,6 +179,7 @@ export function confirmAuthToken({ requestId, token }) {
     identifier: request.displayIdentifier,
     normalizedIdentifier,
     channel: request.channel,
+    provider: request.provider,
     flow: request.flow,
     confirmedAt
   };
@@ -182,6 +191,7 @@ export function confirmAuthToken({ requestId, token }) {
     flow: request.flow,
     identifier: request.displayIdentifier,
     channel: request.channel,
+    provider: request.provider,
     confirmedAt,
     session
   };
@@ -198,6 +208,7 @@ export function verifyAuthToken({ identifier, token }) {
         ok: true,
         identifier: request.displayIdentifier,
         channel: request.channel,
+        provider: request.provider,
         flow: request.flow,
         expiresAt: request.expiresAt
       };
@@ -217,6 +228,7 @@ export function getAuthSnapshot() {
       identifier: user.identifier,
       fullname: user.fullname,
       channel: user.channel,
+      provider: user.provider ?? 'generic',
       verifiedAt: user.verifiedAt,
       status: user.status,
       passwordResetAt: user.passwordResetAt ?? null

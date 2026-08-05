@@ -178,6 +178,42 @@
       gap: 12px;
     }
 
+    .auth-intro {
+      margin-bottom: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(2, 6, 23, 0.45);
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .provider-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 10px 0 16px;
+    }
+
+    .provider-btn {
+      width: 100%;
+      text-align: center;
+      padding: 11px 12px;
+      font-size: 0.93rem;
+      font-weight: 650;
+      border-radius: 12px;
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.82);
+      transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+    }
+
+    .provider-btn:hover {
+      border-color: rgba(103, 232, 249, 0.42);
+      background: rgba(15, 23, 42, 0.95);
+      transform: translateY(-1px);
+    }
+
     .auth-menu {
       display: flex;
       flex-wrap: wrap;
@@ -194,6 +230,7 @@
       border-radius: 999px;
       font-weight: 650;
       cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
     }
 
     .auth-tab.active {
@@ -243,6 +280,11 @@
       outline: none;
     }
 
+    .field input[readonly] {
+      color: #c8d4ea;
+      background: rgba(2, 6, 23, 0.5);
+    }
+
     .field input:focus,
     .field select:focus {
       border-color: rgba(103, 232, 249, 0.55);
@@ -273,6 +315,11 @@
       border: 1px solid var(--border);
     }
 
+    button:hover {
+      transform: translateY(-1px);
+      filter: saturate(1.05);
+    }
+
     .status-box {
       margin-top: 12px;
       padding: 14px;
@@ -283,6 +330,26 @@
       line-height: 1.6;
       min-height: 54px;
       white-space: pre-wrap;
+    }
+
+    .status-box.is-info {
+      border-color: rgba(103, 232, 249, 0.35);
+      background: rgba(8, 47, 73, 0.32);
+    }
+
+    .status-box.is-success {
+      border-color: rgba(34, 197, 94, 0.45);
+      background: rgba(20, 83, 45, 0.32);
+    }
+
+    .status-box.is-warning {
+      border-color: rgba(250, 204, 21, 0.45);
+      background: rgba(113, 63, 18, 0.28);
+    }
+
+    .status-box.is-error {
+      border-color: rgba(248, 113, 113, 0.45);
+      background: rgba(127, 29, 29, 0.3);
     }
 
     .token-hint {
@@ -315,17 +382,19 @@
       main { grid-template-columns: 1fr; padding: 20px; }
       header, footer { padding-left: 20px; padding-right: 20px; }
       .grid { grid-template-columns: 1fr; }
+      .provider-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .auth-menu { gap: 8px; }
+      .auth-tab { font-size: 0.9rem; }
     }
   </style>
 </head>
 <body>
   <div class="shell">
     <header>
-      <div class="eyebrow">eServices · Aperçu navigateur</div>
-      <h1>Votre passeport à porté de main</h1>
+      <div class="eyebrow">eServices · Demande de passeport</div>
+      <h1>Votre passeport à portée de main</h1>
       <p class="subtitle">
-        Cette page remplace le listing de répertoire dans le navigateur et donne un aperçu lisible du projet:
-        structure, règles métier, commandes utiles, fichiers principaux et backend local d'authentification.
+        Connectez-vous via e-mail, téléphone ou fournisseur social pour démarrer et suivre votre dossier en quelques étapes.
       </p>
     </header>
 
@@ -370,10 +439,26 @@ npm run claude:start</pre>
       </aside>
 
       <section class="card">
-        <h2>Authentification locale par email ou téléphone</h2>
-        <p>
-          Prototype interactif de connexion avec validation par code. La page appelle maintenant un backend local qui génère, confirme et vérifie les tokens pour les parcours e-mail et téléphone.
-        </p>
+        <h2>Authentification</h2>
+        <div class="auth-intro">
+          Choisissez votre méthode de connexion: e-mail, téléphone ou fournisseur externe. Le flux inclut l'envoi d'un code de vérification puis sa confirmation pour sécuriser l'accès.
+        </div>
+        <div class="chips" style="margin-bottom: 8px;">
+          <span class="chip">E-mail</span>
+          <span class="chip">Téléphone</span>
+          <span class="chip">Gmail</span>
+          <span class="chip">iCloud</span>
+          <span class="chip">Réseaux sociaux</span>
+        </div>
+        <div class="provider-grid" aria-label="Connexions rapides">
+          <button type="button" class="provider-btn" id="quick-gmail">Continuer avec Gmail</button>
+          <button type="button" class="provider-btn" id="quick-icloud">Continuer avec iCloud</button>
+          <button type="button" class="provider-btn" id="quick-google">Continuer avec Google</button>
+          <button type="button" class="provider-btn" id="quick-apple">Continuer avec Apple</button>
+          <button type="button" class="provider-btn" id="quick-facebook">Continuer avec Facebook</button>
+          <button type="button" class="provider-btn" id="quick-linkedin">Continuer avec LinkedIn</button>
+          <button type="button" class="provider-btn" id="quick-x">Continuer avec X</button>
+        </div>
         <div class="auth-menu" role="tablist" aria-label="Menu d'authentification">
           <button class="auth-tab active" type="button" data-auth-tab="login">Se connecter</button>
           <button class="auth-tab" type="button" data-auth-tab="register">S'inscrire</button>
@@ -392,7 +477,27 @@ npm run claude:start</pre>
             </div>
             <div class="field">
               <label for="identifier">Adresse e-mail ou numéro</label>
-              <input id="identifier" name="identifier" type="text" placeholder="ex: utilisateur@exemple.com ou +33 6 12 34 56 78" required>
+              <input id="identifier" name="identifier" type="text" placeholder="ex: utilisateur@gmail.com ou +33 6 12 34 56 78" required>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="login-provider">Fournisseur du compte</label>
+              <select id="login-provider" name="login-provider">
+                <option value="generic">Compte e-mail standard</option>
+                <option value="gmail">Gmail</option>
+                <option value="icloud">iCloud</option>
+                <option value="google">Google</option>
+                <option value="apple">Apple</option>
+                <option value="facebook">Facebook</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="x">X</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="login-note">Suggestion</label>
+              <input id="login-note" type="text" value="Sélectionnez le fournisseur correspondant à votre compte pour un parcours plus direct." readonly>
             </div>
           </div>
 
@@ -417,12 +522,12 @@ npm run claude:start</pre>
           </div>
 
           <div class="token-hint" id="token-hint">Aucun token généré pour le moment.</div>
-          <div class="status-box" id="auth-status">En attente d'une demande de connexion.</div>
+          <div class="status-box is-info" id="auth-status">En attente d'une demande de connexion.</div>
         </form>
 
         <form class="auth-form auth-panel" id="auth-register" data-auth-panel="register">
           <p class="section-note">
-            Création de compte avec choix du canal de confirmation, mot de passe, consentement et vérification par token.
+            Créez votre compte avec vérification du contact et confirmation du code avant activation.
           </p>
           <div class="field-row">
             <div class="field">
@@ -465,7 +570,7 @@ npm run claude:start</pre>
             <button type="button" id="confirm-register">Confirmer l'inscription</button>
           </div>
 
-          <div class="status-box" id="register-status">Préparez les informations pour l'inscription.</div>
+          <div class="status-box is-info" id="register-status">Préparez les informations pour l'inscription.</div>
           <ul class="mini-list">
             <li>Validation du mot de passe et de sa confirmation</li>
             <li>Choix du canal de réception du code</li>
@@ -475,7 +580,7 @@ npm run claude:start</pre>
 
         <section class="auth-panel" data-auth-panel="forgot">
           <p class="section-note">
-            Réinitialisation du mot de passe via e-mail ou téléphone. Ici, le code est simulé localement pour montrer le parcours complet.
+            Réinitialisez votre mot de passe via e-mail ou téléphone, avec envoi d'un code de sécurité.
           </p>
           <div class="field-row">
             <div class="field">
@@ -493,12 +598,12 @@ npm run claude:start</pre>
           <div class="actions">
             <button type="button" id="forgot-token">Envoyer le code de récupération</button>
           </div>
-          <div class="status-box" id="forgot-status">Entrez votre identifiant de récupération pour recevoir un code.</div>
+          <div class="status-box is-info" id="forgot-status">Entrez votre identifiant de récupération pour recevoir un code.</div>
         </section>
 
         <section class="auth-panel" data-auth-panel="verify">
           <p class="section-note">
-            Vérification d'un token reçu pendant la connexion, l'inscription ou la réinitialisation.
+            Vérifiez un code reçu pendant la connexion, l'inscription ou la réinitialisation.
           </p>
           <div class="field-row">
             <div class="field">
@@ -513,7 +618,7 @@ npm run claude:start</pre>
           <div class="actions">
             <button type="button" id="verify-code">Vérifier</button>
           </div>
-          <div class="status-box" id="verify-status">Utilisez ce menu pour valider un code reçu par message ou par mail.</div>
+          <div class="status-box is-info" id="verify-status">Utilisez ce menu pour valider un code reçu par message ou par mail.</div>
         </section>
       </section>
 
@@ -546,8 +651,16 @@ npm run claude:start</pre>
     const authTabs = document.querySelectorAll('[data-auth-tab]');
     const authPanels = document.querySelectorAll('[data-auth-panel]');
     const authForm = document.getElementById('auth-login');
+    const quickGmailButton = document.getElementById('quick-gmail');
+    const quickIcloudButton = document.getElementById('quick-icloud');
+    const quickGoogleButton = document.getElementById('quick-google');
+    const quickAppleButton = document.getElementById('quick-apple');
+    const quickFacebookButton = document.getElementById('quick-facebook');
+    const quickLinkedinButton = document.getElementById('quick-linkedin');
+    const quickXButton = document.getElementById('quick-x');
     const deliveryInput = document.getElementById('delivery');
     const identifierInput = document.getElementById('identifier');
+    const loginProviderInput = document.getElementById('login-provider');
     const tokenInput = document.getElementById('token');
     const tokenHint = document.getElementById('token-hint');
     const authStatus = document.getElementById('auth-status');
@@ -635,8 +748,89 @@ npm run claude:start</pre>
       }
     }
 
-    function setStatus(message) {
-      authStatus.textContent = message;
+    function setBoxState(target, level, message) {
+      target.classList.remove('is-info', 'is-success', 'is-warning', 'is-error');
+      target.classList.add(`is-${level}`);
+      target.textContent = message;
+    }
+
+    function setStatus(message, level = 'info') {
+      setBoxState(authStatus, level, message);
+    }
+
+    function inferProvider(identifier) {
+      const value = identifier.trim().toLowerCase();
+      if (value.endsWith('@gmail.com')) {
+        return 'gmail';
+      }
+
+      if (value.endsWith('@icloud.com') || value.endsWith('@me.com') || value.endsWith('@mac.com')) {
+        return 'icloud';
+      }
+
+      if (value.includes('google')) {
+        return 'google';
+      }
+
+      if (value.includes('apple') || value.includes('icloud')) {
+        return 'apple';
+      }
+
+      if (value.includes('facebook') || value.includes('fb')) {
+        return 'facebook';
+      }
+
+      if (value.includes('linkedin')) {
+        return 'linkedin';
+      }
+
+      if (value === 'x' || value.includes('twitter') || value.includes('x.com')) {
+        return 'x';
+      }
+
+      return 'generic';
+    }
+
+    function providerDisplayName(provider) {
+      const labels = {
+        generic: 'compte standard',
+        gmail: 'Gmail',
+        icloud: 'iCloud',
+        google: 'Google',
+        apple: 'Apple',
+        facebook: 'Facebook',
+        linkedin: 'LinkedIn',
+        x: 'X'
+      };
+
+      return labels[provider] || 'compte standard';
+    }
+
+    function providerSuggestionIdentifier(provider) {
+      const suggestions = {
+        generic: 'utilisateur@exemple.com',
+        gmail: 'utilisateur@gmail.com',
+        icloud: 'utilisateur@icloud.com',
+        google: 'compte.google',
+        apple: 'compte.apple',
+        facebook: 'compte.facebook',
+        linkedin: 'compte.linkedin',
+        x: 'compte.x'
+      };
+
+      return suggestions[provider] || 'utilisateur@exemple.com';
+    }
+
+    function suggestProvider(provider) {
+      switchAuthTab('login');
+      if (loginProviderInput) {
+        loginProviderInput.value = provider;
+      }
+
+      deliveryInput.value = 'email';
+      identifierInput.value = providerSuggestionIdentifier(provider);
+      setStatus(`Suggestion activée: connexion via ${providerDisplayName(provider)}. Vous pouvez confirmer ou modifier l'identifiant proposé.`, 'info');
+      tokenHint.textContent = `Le backend local générera un token de confirmation pour ${providerDisplayName(provider)}.`;
     }
 
     function resetAuth() {
@@ -646,16 +840,28 @@ npm run claude:start</pre>
       authState.identifier = '';
       authForm.reset();
       deliveryInput.value = 'email';
+      if (loginProviderInput) {
+        loginProviderInput.value = 'generic';
+      }
       tokenInput.value = '';
       tokenHint.textContent = 'Aucun token généré pour le moment.';
-      setStatus('En attente d\'une demande de connexion.');
+      setStatus('En attente d\'une demande de connexion.', 'info');
     }
+
+    quickGmailButton?.addEventListener('click', () => suggestProvider('gmail'));
+    quickIcloudButton?.addEventListener('click', () => suggestProvider('icloud'));
+    quickGoogleButton?.addEventListener('click', () => suggestProvider('google'));
+    quickAppleButton?.addEventListener('click', () => suggestProvider('apple'));
+    quickFacebookButton?.addEventListener('click', () => suggestProvider('facebook'));
+    quickLinkedinButton?.addEventListener('click', () => suggestProvider('linkedin'));
+    quickXButton?.addEventListener('click', () => suggestProvider('x'));
 
     authForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const identifier = identifierInput.value.trim();
+      const provider = loginProviderInput ? loginProviderInput.value : inferProvider(identifier);
       if (!identifier) {
-        setStatus('Veuillez renseigner une adresse e-mail ou un numéro de téléphone.');
+        setStatus('Veuillez renseigner une adresse e-mail ou un numéro de téléphone.', 'warning');
         return;
       }
 
@@ -663,7 +869,8 @@ npm run claude:start</pre>
         const result = await postJson('/api/auth/request-token', {
           flow: 'login',
           channel: deliveryInput.value,
-          identifier
+          identifier,
+          provider
         });
 
         authRegistry.login = result;
@@ -673,18 +880,18 @@ npm run claude:start</pre>
         authState.expiresAt = result.expiresAt;
 
         tokenHint.textContent = `${result.deliveryMessage} Expire à ${formatExpiry(new Date(result.expiresAt))}.`;
-        setStatus(`Token de connexion généré pour ${result.identifier}. Saisissez le code pour confirmer.`);
+        setStatus(`Code de vérification envoyé pour ${result.identifier}. Saisissez le code pour finaliser la connexion.`, 'success');
         tokenInput.value = '';
         tokenInput.focus();
       } catch (error) {
-        setStatus(`Erreur backend: ${error.message}`);
+        setStatus(`Échec de génération du code: ${error.message}`, 'error');
       }
     });
 
     confirmButton.addEventListener('click', async () => {
       const enteredToken = tokenInput.value.trim();
       if (!authRegistry.login?.requestId) {
-        setStatus('Demandez d\'abord un token de connexion.');
+        setStatus('Demandez d\'abord un code de vérification avant de confirmer.', 'warning');
         return;
       }
 
@@ -694,12 +901,12 @@ npm run claude:start</pre>
           token: enteredToken
         });
 
-        setStatus(`Connexion réussie pour ${result.identifier} via ${result.channel === 'email' ? 'e-mail' : 'SMS'}.`);
+        setStatus(`Connexion confirmée pour ${result.identifier} via ${result.channel === 'email' ? 'e-mail' : 'SMS'}.`, 'success');
         tokenHint.textContent = 'Connexion confirmée par le backend local.';
         authState.token = '';
         authRegistry.login = null;
       } catch (error) {
-        setStatus(`Confirmation refusée: ${error.message}`);
+        setStatus(`Échec de confirmation du code: ${error.message}`, 'error');
       }
     });
 
@@ -712,17 +919,17 @@ npm run claude:start</pre>
       const passwordConfirm = registerPasswordConfirmInput.value;
 
       if (!fullname || !contact || !password || !passwordConfirm) {
-        registerStatus.textContent = 'Veuillez remplir tous les champs de l\'inscription.';
+        setBoxState(registerStatus, 'warning', 'Veuillez compléter tous les champs de l\'inscription.');
         return;
       }
 
       if (password.length < 8) {
-        registerStatus.textContent = 'Le mot de passe doit contenir au moins 8 caractères.';
+        setBoxState(registerStatus, 'warning', 'Le mot de passe doit contenir au moins 8 caractères.');
         return;
       }
 
       if (password !== passwordConfirm) {
-        registerStatus.textContent = 'Les mots de passe ne correspondent pas.';
+        setBoxState(registerStatus, 'warning', 'La confirmation du mot de passe ne correspond pas.');
         return;
       }
 
@@ -732,21 +939,22 @@ npm run claude:start</pre>
           channel: registerChannelInput.value,
           identifier: contact,
           fullname,
-          password
+          password,
+          provider: inferProvider(contact)
         });
 
         authRegistry.register = result;
-        registerStatus.textContent = `${result.deliveryMessage} Confirmez avec le token reçu pour finaliser l'inscription.`;
+        setBoxState(registerStatus, 'success', `${result.deliveryMessage} Saisissez le code reçu pour finaliser l'inscription.`);
         registerTokenInput.value = '';
         registerTokenInput.focus();
       } catch (error) {
-        registerStatus.textContent = `Erreur backend: ${error.message}`;
+        setBoxState(registerStatus, 'error', `Échec de préparation de l'inscription: ${error.message}`);
       }
     });
 
     confirmRegisterButton.addEventListener('click', async () => {
       if (!authRegistry.register?.requestId) {
-        registerStatus.textContent = 'Commencez par envoyer le code d\'inscription.';
+        setBoxState(registerStatus, 'warning', 'Envoyez d\'abord un code d\'inscription avant la confirmation.');
         return;
       }
 
@@ -756,10 +964,10 @@ npm run claude:start</pre>
           token: registerTokenInput.value.trim()
         });
 
-        registerStatus.textContent = `Inscription validée pour ${result.user.fullname || result.identifier} (${result.identifier}).`;
+        setBoxState(registerStatus, 'success', `Inscription validée pour ${result.user.fullname || result.identifier} (${result.identifier}).`);
         authRegistry.register = null;
       } catch (error) {
-        registerStatus.textContent = `Inscription refusée: ${error.message}`;
+        setBoxState(registerStatus, 'error', `Échec de validation de l'inscription: ${error.message}`);
       }
     });
 
@@ -767,7 +975,7 @@ npm run claude:start</pre>
       const contact = forgotContactInput.value.trim();
 
       if (!contact) {
-        forgotStatus.textContent = 'Indiquez un identifiant pour récupérer le mot de passe.';
+        setBoxState(forgotStatus, 'warning', 'Indiquez un identifiant pour récupérer le mot de passe.');
         return;
       }
 
@@ -779,9 +987,9 @@ npm run claude:start</pre>
         });
 
         authRegistry.forgot = result;
-        forgotStatus.textContent = `${result.deliveryMessage} Utilisez ensuite le menu Vérifier le token ou la confirmation de réinitialisation.`;
+        setBoxState(forgotStatus, 'success', `${result.deliveryMessage} Utilisez ensuite le menu Vérifier le token ou finalisez la réinitialisation.`);
       } catch (error) {
-        forgotStatus.textContent = `Erreur backend: ${error.message}`;
+        setBoxState(forgotStatus, 'error', `Échec d'envoi du code de récupération: ${error.message}`);
       }
     });
 
@@ -790,7 +998,7 @@ npm run claude:start</pre>
       const token = verifyTokenInput.value.trim();
 
       if (!target || !token) {
-        verifyStatus.textContent = 'Indiquez l\'identifiant et le token à vérifier.';
+        setBoxState(verifyStatus, 'warning', 'Indiquez l\'identifiant et le code à vérifier.');
         return;
       }
 
@@ -800,9 +1008,9 @@ npm run claude:start</pre>
           token
         });
 
-        verifyStatus.textContent = `Token ${result.token || token} confirmé pour ${result.identifier} via ${result.channel === 'email' ? 'e-mail' : 'SMS'}.`;
+        setBoxState(verifyStatus, 'success', `Code confirmé pour ${result.identifier} via ${result.channel === 'email' ? 'e-mail' : 'SMS'}.`);
       } catch (error) {
-        verifyStatus.textContent = `Vérification refusée: ${error.message}`;
+        setBoxState(verifyStatus, 'error', `Échec de vérification du code: ${error.message}`);
       }
     });
 
